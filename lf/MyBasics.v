@@ -21,7 +21,6 @@ Definition andb3 (b c d : bool) : bool :=
   | true, true, true => true
   | _, _, _ => false
   end.
-
 Example test_andb31: (andb3 true true true) = true. Proof. reflexivity. Qed.
 Example test_andb32: (andb3 false true true) = false. Proof. reflexivity. Qed.
 Example test_andb33: (andb3 true false true) = false. Proof. reflexivity. Qed.
@@ -34,7 +33,6 @@ Fixpoint factorial (n : nat) : nat :=
   | O => S O
   | S n' => n * factorial (n')
   end.
-
 Example test_factorial1: (factorial 3) = 6. Proof. reflexivity. Qed.
 Example test_factorial2: (factorial 5) = (10 * 12). Proof. reflexivity. Qed.
 
@@ -163,3 +161,70 @@ Qed.
 
 (* ************************************************************************** *)
 (* Exercise: 3 stars, standard (binary) *)
+Inductive bin : Type :=
+| Z
+| B0 (n : bin)
+| B1 (n : bin)
+.
+
+(* incr / dect *)
+Fixpoint incr (m : bin) : bin :=
+  match m with
+  | B0 m' => B1 m'
+  | _ => B0 m
+  end.
+Fixpoint decr (m : bin) : bin :=
+  match m with
+  | Z => Z
+  | B0 m' => m'
+  | B1 m' => B0 m'
+  end.
+Theorem incr_decr_identity : forall a : bin, decr (incr a) = a.
+Proof.
+  intros a.
+  destruct a.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
+(* euclidean division on nat (useless) *)
+Fixpoint _divmod (x y quot rem : nat) : (nat * nat) :=
+  match x with
+  | O => (quot, rem)
+  | S x' => match rem with
+            | O =>      _divmod x' y (S quot) y
+            | S rem' => _divmod x' y quot rem'
+            end
+  end.
+Definition divmod x y :=
+  match y with
+  | O => (y, y)
+  | S y' =>
+    match _divmod x y' 0 y' with
+    | (quot, rem) => (quot, y' - rem)
+    end
+  end.
+Definition div x y := fst (divmod x y).
+Definition mod x y := snd (divmod x y).
+Example divmod1 : divmod 5 1 = (5, 0). Proof. compute. reflexivity. Qed.
+Example divmod2 : divmod 5 2 = (2, 1). Proof. compute. reflexivity. Qed.
+Example divmod3 : divmod 5 3 = (1, 2). Proof. compute. reflexivity. Qed.
+Example divmod4 : divmod 5 4 = (1, 1). Proof. compute. reflexivity. Qed.
+Example divmod5 : divmod 5 5 = (1, 0). Proof. compute. reflexivity. Qed.
+Example divmod6 : divmod 5 6 = (0, 5). Proof. compute. reflexivity. Qed.
+(* conversions *)
+Fixpoint _bin_to_nat (m : bin) (weight : nat) : nat :=
+  match m with
+  | Z => O
+  | B1 m' => weight + _bin_to_nat m' (weight * 2)
+  | B0 m' => _bin_to_nat m' (weight * 2)
+  end.
+Definition bin_to_nat (m : bin) : nat := _bin_to_nat m 1.
+(* tests *)
+Example test_bin_incr1 : (incr (B1 Z)) = B0 (B1 Z). Proof. reflexivity. Qed.
+Example test_bin_incr2 : (incr (B0 (B1 Z))) = B1 (B1 Z). Proof. reflexivity. Qed.
+Example test_bin_incr3 : (incr (B1 (B1 Z))) = B0 (B1 (B1 Z)). Proof. reflexivity. Qed.
+Example test_bin_incr4 : bin_to_nat (B0 (B1 Z)) = 2. Proof. reflexivity. Qed.
+Example test_bin_incr5 : bin_to_nat (incr (B1 Z)) = 1 + bin_to_nat (B1 Z). Proof. reflexivity. Qed.
+Example test_bin_incr6 :  bin_to_nat (incr (incr (B1 Z))) = 2 + bin_to_nat (B1 Z). Proof. reflexivity. Qed.
