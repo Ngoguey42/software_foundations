@@ -41,3 +41,23 @@ time-of-build-after.log
 time-of-build-before.log
 time-of-build-both.log
 time-of-build-pretty.log
+
+# emacs stuff
+*~
+\#*\#
+.\#*
+
+# Ignore files from zip
+lf/*.html
+lf/Makefile
+lf/*.gif
+lf/*.map
+lf/*.v
+lf/LICENSE
+lf/*.ml
+lf/_CoqProject
+lf/README
+lf/common
+
+# Re-enable my .v files
+!My*.v
