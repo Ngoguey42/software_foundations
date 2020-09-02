@@ -1,3 +1,4 @@
+Require Arith. (* Required at toplevel, but not imported yet *)
 
 (* ************************************************************************** *)
 (* Exercise: 2 stars, standard, especially useful (basic_induction) *)
@@ -9,7 +10,7 @@ Proof.
   - reflexivity.
   - simpl. rewrite <- IHn'. reflexivity.
 Qed.
-Theorem mult_0_r : forall n : nat,  n * 0 = 0.
+Theorem mult_0_r : forall n : nat, n * 0 = 0.
 Proof.
   intro n.
   induction n as [|n' IHn'].
@@ -79,8 +80,7 @@ Qed.
 
 (* ************************************************************************** *)
 (* Exercise: 3 stars, standard, especially useful (mult_comm) *)
-Theorem plus_swap : forall n m p : nat,
-    n + (m + p) = m + (n + p).
+Theorem plus_swap : forall n m p : nat, n + (m + p) = m + (n + p).
 Proof.
   intros n m p.
   rewrite -> plus_assoc.
@@ -94,57 +94,64 @@ Proof.
   rewrite -> H'.
   reflexivity.
 Qed.
-Theorem mult_comm : forall n m : nat,
-    m * n = n * m.
+Theorem mult_n_Sm : forall n m : nat, m * S n = m + m * n.
+Proof.
+  intros n m.
+  induction m as [|m' IHm'].
+  - reflexivity.
+  - simpl.
+    rewrite -> IHm'.
+    rewrite -> plus_assoc.
+    assert (H: n + m' = m' + n).
+    { rewrite -> plus_comm. reflexivity. }
+    rewrite -> H.
+    rewrite -> plus_assoc.
+    reflexivity.
+Qed.
+Theorem mult_comm : forall n m : nat, m * n = n * m.
 Proof.
   intros n m.
 
-  assert (mult0: forall x : nat, x * 0 = 0). {
-    intros x.
-    induction x as [|x' IHx'].
-    - reflexivity.
-    - simpl. rewrite -> IHx'. reflexivity.
-  }
-
-  assert (S0_is_plus1 : forall x : nat, S x = x + 1). {
-    intros x.
-    induction x as [|x' IHx'].
-    - reflexivity.
-    - simpl. rewrite -> IHx'. reflexivity.
-  }
-
-  assert (mult_plus1: forall x y : nat, x * (1 + y) = x * y + x). {
-    intros x y.
-    induction x as [|x' IHx'].
-    - simpl. reflexivity.
-    - {
-        assert (H: S x' = x' + 1). { rewrite -> S0_is_plus1. reflexivity. }
-        assert (H': 1 + y = y + 1). { rewrite -> plus_comm. reflexivity. }
-
-        simpl.
-
-
-
-        (* rewrite -> H. *)
-        (* rewrite <- H'. *)
-        (* rewrite -> IHx'. *)
-        (* rew *)
-
-        (* rewrite -> S0_is_plus1. *)
-        (* simpl. rewrite -> IHx'. *)
-      }
-  }
-
-
   induction n as [|n' IHn'].
-  - simpl. rewrite -> mult0. reflexivity.
-  -
-
-
-
-  - simpl.
-
+  - rewrite -> mult_0_r. simpl. reflexivity.
+  - {
+      rewrite -> mult_n_Sm.
+      rewrite -> IHn'.
+      simpl. (* Magic simplification *)
+      reflexivity.
+    }
 Qed.
+Module Again0.
+  Import Arith.
+  Theorem mult_comm : forall n m : nat, m * n = n * m.
+  Proof.
+    intros n m.
+    ring.
+Qed.
+End Again0.
+Module Again1.
+  Theorem mult_comm : forall n m : nat, m * n = n * m.
+  Proof.
+    (* I didn't find a way to make it work with `intros n m` *)
+    (* intros n m. *)
+    induction n as [|n' IHn']; induction m as [|m' IHm'].
+    - reflexivity.
+    - simpl. rewrite -> IHm'. reflexivity.
+    - simpl. rewrite <- IHn'. reflexivity.
+    - simpl.
+      rewrite <- IHn'.
+      rewrite -> IHm'.
+      simpl.
+      rewrite -> IHn'.
+      rewrite -> plus_assoc.
+      rewrite -> plus_assoc.
+      assert (H: n' + m' = m' + n').
+      { rewrite -> plus_comm. reflexivity. }
+      rewrite -> H.
+      reflexivity.
+  Qed.
+End Again1.
+
 (* ************************************************************************** *)
 (* ************************************************************************** *)
 (* ************************************************************************** *)
