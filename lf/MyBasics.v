@@ -14,6 +14,29 @@ Example test_nandb2 : (nandb false false = true). Proof. reflexivity. Qed.
 Example test_nandb3 : (nandb false true = true). Proof. reflexivity. Qed.
 Example test_nandb4 : (nandb true true = false). Proof. reflexivity. Qed.
 
+(* Exercise: 1 star, standard (nandb) - experiments *)
+Definition notb (b : bool) : bool :=
+  match b with
+  | true => false
+  | false => true
+  end.
+Definition andb (b c : bool) : bool :=
+  match b, c with
+  | true, true => true
+  | _, _ => false
+  end.
+Definition nandb_bis (b c : bool) : bool := notb (andb b c).
+Theorem nandbs_equivalents : forall b c : bool,
+    (nandb b c) = (nandb_bis b c).
+Proof.
+  intros b c.
+  destruct b, c.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+  - reflexivity.
+Qed.
+
 (* ************************************************************************** *)
 (* Exercise: 1 star, standard (andb3) *)
 Definition andb3 (b c d : bool) : bool :=
@@ -102,7 +125,7 @@ Qed.
 Notation "x =? y" := (eqb x y) (at level 70) : nat_scope.
 Theorem zero_nbeq_plus_1 : forall n : nat, 0 =? (n + 1) = false.
 Proof.
-  intros [|n].
+  intros [].
   - simpl. reflexivity.
   - simpl. reflexivity.
 Qed.
@@ -133,7 +156,7 @@ Qed.
 Theorem negb_involutive : forall b : bool,
   negb (negb b) = b.
 Proof.
-  intros b. destruct b eqn:E.
+  intros [].
   - reflexivity.
   - reflexivity.
 Qed.
@@ -150,81 +173,113 @@ Proof.
 Qed.
 
 (* ************************************************************************** *)
-(* Exercise: 3 stars, standard, optional (andb_eq_orb) *)
-Theorem andb_eq_orb : forall b c, andb b c = orb b c -> b = c.
+(* Exercise: 3 stars, standard, optional (andb_eq_orb)
+
+false & false = false | false  ||| false = false
+ true &  true =  true | true   ||| true = true
+
+ true & false =  true | false  ||| false = true
+false &  true = false | true   ||| false = true *)
+Theorem andb_eq_orb_cheat : forall b c, andb b c = orb b c -> b = c.
 Proof.
   intros b c.
-  destruct b.
-  - { simpl. intros H. rewrite <- H. reflexivity. }
-  - { simpl. intros H. rewrite <- H. reflexivity. }
+  destruct b, c.
+  - reflexivity.
+  - simpl. intros H. rewrite -> H.  reflexivity.
+  - simpl. intros H. rewrite -> H.  reflexivity.
+  - reflexivity.
+Qed.
+Theorem andb_eq_orb_cheat2 : forall b c, andb b c = orb b c -> b = c.
+Proof.
+intros [|] [|] H.
+- reflexivity.
+- simpl in H. rewrite H. reflexivity.
+- simpl in H. exact H.
+- reflexivity.
 Qed.
 
 (* ************************************************************************** *)
 (* Exercise: 3 stars, standard (binary) *)
+
+(* bin *)
 Inductive bin : Type :=
 | Z
 | B0 (n : bin)
-| B1 (n : bin)
-.
-
-(* incr / dect *)
+| B1 (n : bin).
+Definition zero_bin : bin := Z.
+Definition one_bin : bin := B1 Z.
+Definition two_bin : bin := B0 one_bin.
+Definition three_bin : bin := B1 one_bin.
+Definition four_bin : bin := B0 two_bin.
+Definition five_bin : bin := B1 two_bin.
+Definition six_bin : bin := B0 three_bin.
+Definition seven_bin : bin := B1 three_bin.
 Fixpoint incr (m : bin) : bin :=
   match m with
-  | B0 m' => B1 m'
-  | _ => B0 m
+  | Z => B1 Z
+  | B0 n => B1 n
+  | B1 n => B0 (incr n)
   end.
+Example test_bin_incr0 : incr zero_bin = one_bin. Proof. reflexivity. Qed.
+Example test_bin_incr1 : incr one_bin = two_bin. Proof. reflexivity. Qed.
+Example test_bin_incr2 : incr two_bin = three_bin. Proof. reflexivity. Qed.
+Example test_bin_incr3 : incr three_bin = four_bin. Proof. reflexivity. Qed.
+Example test_bin_incr4 : incr four_bin = five_bin. Proof. reflexivity. Qed.
+Example test_bin_incr5 : incr five_bin = six_bin. Proof. reflexivity. Qed.
+Example test_bin_incr6 : incr six_bin = seven_bin. Proof. reflexivity. Qed.
+
+(* conversions *)
+Fixpoint bin_to_nat' (m : bin) (weight : nat) : nat :=
+  match m with
+  | Z => O
+  | B1 m' => weight + bin_to_nat' m' (weight * 2)
+  | B0 m' => bin_to_nat' m' (weight * 2)
+  end.
+Definition bin_to_nat (m : bin) : nat := bin_to_nat' m 1.
+Definition zero_nat : nat := O.
+Definition one_nat : nat := S zero_nat.
+Definition two_nat : nat := S one_nat.
+Definition three_nat : nat := S two_nat.
+Definition four_nat : nat := S three_nat.
+Definition five_nat : nat := S four_nat.
+Definition six_nat : nat := S five_nat.
+Definition seven_nat : nat := S six_nat.
+Example test_bin_to_nat_0 : bin_to_nat zero_bin = zero_nat. Proof. reflexivity. Qed.
+Example test_bin_to_nat_1 : bin_to_nat one_bin = one_nat. Proof. reflexivity. Qed.
+Example test_bin_to_nat_2 : bin_to_nat two_bin = two_nat. Proof. reflexivity. Qed.
+Example test_bin_to_nat_3 : bin_to_nat three_bin = three_nat. Proof. reflexivity. Qed.
+Example test_bin_to_nat_4 : bin_to_nat four_bin = four_nat. Proof. reflexivity. Qed.
+Example test_bin_to_nat_5 : bin_to_nat five_bin = five_nat. Proof. reflexivity. Qed.
+Example test_bin_to_nat_6 : bin_to_nat six_bin = six_nat. Proof. reflexivity. Qed.
+Example test_bin_to_nat_7 : bin_to_nat seven_bin = seven_nat. Proof. reflexivity. Qed.
+
+(* experiments *)
 Fixpoint decr (m : bin) : bin :=
   match m with
   | Z => Z
-  | B0 m' => m'
-  | B1 m' => B0 m'
+  | B1 Z => Z
+  | B0 (B1 Z) => B1 Z
+  | B1 x => B0 x
+  | B0 x => B1 (decr x)
   end.
-Theorem incr_decr_identity : forall a : bin, decr (incr a) = a.
+Example test_bin_decr0 : decr zero_bin = zero_bin. Proof. reflexivity. Qed.
+Example test_bin_decr1 : decr one_bin = zero_bin. Proof. reflexivity. Qed.
+Example test_bin_decr2 : decr two_bin = one_bin. Proof. reflexivity. Qed.
+Example test_bin_decr3 : decr three_bin = two_bin. Proof. reflexivity. Qed.
+Example test_bin_decr4 : decr four_bin = three_bin. Proof. reflexivity. Qed.
+Example test_bin_decr5 : decr five_bin = four_bin. Proof. reflexivity. Qed.
+Example test_bin_decr6 : decr six_bin = five_bin. Proof. reflexivity. Qed.
+Example test_bin_decr7 : decr seven_bin = six_bin. Proof. reflexivity. Qed.
+Theorem incr_decr_inverse : forall x, decr (incr x) = x.
 Proof.
-  intros a.
-  destruct a.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-Qed.
+Admitted.
 
-(* euclidean division on nat (useless) *)
-Fixpoint _divmod (x y quot rem : nat) : (nat * nat) :=
+(* experiments *)
+Fixpoint nat_to_bin (x : nat) : bin :=
   match x with
-  | O => (quot, rem)
-  | S x' => match rem with
-            | O =>      _divmod x' y (S quot) y
-            | S rem' => _divmod x' y quot rem'
-            end
+  | O => Z
+  | S x => incr (nat_to_bin x)
   end.
-Definition divmod x y :=
-  match y with
-  | O => (y, y)
-  | S y' =>
-    match _divmod x y' 0 y' with
-    | (quot, rem) => (quot, y' - rem)
-    end
-  end.
-Definition div x y := fst (divmod x y).
-Definition mod x y := snd (divmod x y).
-Example divmod1 : divmod 5 1 = (5, 0). Proof. compute. reflexivity. Qed.
-Example divmod2 : divmod 5 2 = (2, 1). Proof. compute. reflexivity. Qed.
-Example divmod3 : divmod 5 3 = (1, 2). Proof. compute. reflexivity. Qed.
-Example divmod4 : divmod 5 4 = (1, 1). Proof. compute. reflexivity. Qed.
-Example divmod5 : divmod 5 5 = (1, 0). Proof. compute. reflexivity. Qed.
-Example divmod6 : divmod 5 6 = (0, 5). Proof. compute. reflexivity. Qed.
-(* conversions *)
-Fixpoint _bin_to_nat (m : bin) (weight : nat) : nat :=
-  match m with
-  | Z => O
-  | B1 m' => weight + _bin_to_nat m' (weight * 2)
-  | B0 m' => _bin_to_nat m' (weight * 2)
-  end.
-Definition bin_to_nat (m : bin) : nat := _bin_to_nat m 1.
-(* tests *)
-Example test_bin_incr1 : (incr (B1 Z)) = B0 (B1 Z). Proof. reflexivity. Qed.
-Example test_bin_incr2 : (incr (B0 (B1 Z))) = B1 (B1 Z). Proof. reflexivity. Qed.
-Example test_bin_incr3 : (incr (B1 (B1 Z))) = B0 (B1 (B1 Z)). Proof. reflexivity. Qed.
-Example test_bin_incr4 : bin_to_nat (B0 (B1 Z)) = 2. Proof. reflexivity. Qed.
-Example test_bin_incr5 : bin_to_nat (incr (B1 Z)) = 1 + bin_to_nat (B1 Z). Proof. reflexivity. Qed.
-Example test_bin_incr6 :  bin_to_nat (incr (incr (B1 Z))) = 2 + bin_to_nat (B1 Z). Proof. reflexivity. Qed.
+Theorem bin_to_nat_to_bin : forall x : bin, nat_to_bin (bin_to_nat x) = x.
+Proof.
+Admitted.
