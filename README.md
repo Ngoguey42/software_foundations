@@ -19,4 +19,9 @@ C-h v describe-variable```
   - `C-c C-t` list in Response everything evaluated so far
 
 
+- https://julesjacobs.com/notes/coq-cheatsheet/coq-cheatsheet.pdf
+- http://www.csl.sri.com/users/sgl/ssft/aux/cheat1.pdf
+- https://www.cs.yale.edu/flint/cs428/coq/pdf/Reference-Manual.pdf
+- https://www.inf.ed.ac.uk/teaching/courses/tspl/cheatsheet.pdf
+
 #
